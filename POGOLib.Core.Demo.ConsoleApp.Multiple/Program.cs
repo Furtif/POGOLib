@@ -79,31 +79,35 @@ namespace POGOLib.Official.Demo.ConsoleApp.Multiple
                                 throw new ArgumentException("Login provider must be either \"google\" or \"ptc\".");
                         }
 
+                        var logger = new Logging.Logger();
+                        logger.RegisterLogOutput((level, message) =>
+                                                 {
+                                                     switch (level)
+                                                     {
+                                                         case LogLevel.Debug:
+                                                             Logger.Debug(message);
+                                                             break;
+                                                         case LogLevel.Info:
+                                                             Logger.Info(message);
+                                                             break;
+                                                         case LogLevel.Notice:
+                                                         case LogLevel.Warn:
+                                                             Logger.Warn(message);
+                                                             break;
+                                                         case LogLevel.Error:
+                                                             Logger.Error(message);
+                                                             break;
+                                                         default:
+                                                             throw new ArgumentOutOfRangeException(nameof(level), level, null);
+                                                     }
+                                                 });
+
+
                         var locRandom = new Random();
                         var latitude = 51.507352 + locRandom.NextDouble(-0.000030, 0.000030); // Somewhere in London
                         var longitude = -0.127758 + locRandom.NextDouble(-0.000030, 0.000030);
-                        var session = await GetSession(loginProvider, latitude, longitude, true);
-                        session.Logger.RegisterLogOutput((level, message) =>
-                        {
-                            switch (level)
-                            {
-                                case LogLevel.Debug:
-                                    Logger.Debug(message);
-                                    break;
-                                case LogLevel.Info:
-                                    Logger.Info(message);
-                                    break;
-                                case LogLevel.Notice:
-                                case LogLevel.Warn:
-                                    Logger.Warn(message);
-                                    break;
-                                case LogLevel.Error:
-                                    Logger.Error(message);
-                                    break;
-                                default:
-                                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
-                            }
-                        });
+                        var session = await GetSession(loginProvider, latitude, longitude, logger, true);
+
                         SaveAccessToken(session.AccessToken);
 
                         session.AccessTokenUpdated += SessionOnAccessTokenUpdated;
@@ -207,7 +211,7 @@ namespace POGOLib.Official.Demo.ConsoleApp.Multiple
         /// <param name="initLat">The initial latitude.</param>
         /// <param name="initLong">The initial longitude.</param>
         /// <param name="mayCache">Can we cache the <see cref="AccessToken" /> to a local file?</param>
-        private static async Task<Session> GetSession(ILoginProvider loginProvider, double initLat, double initLong, bool mayCache = false)
+        private static async Task<Session> GetSession(ILoginProvider loginProvider, double initLat, double initLong, Logging.ILogger logger, bool mayCache = false)
         {
             var cacheDir = Path.Combine(Directory.GetCurrentDirectory(), "Cache");
             var fileName = Path.Combine(cacheDir, $"{loginProvider.UserId}-{loginProvider.ProviderId}.json");
@@ -222,11 +226,11 @@ namespace POGOLib.Official.Demo.ConsoleApp.Multiple
                     var accessToken = JsonConvert.DeserializeObject<AccessToken>(File.ReadAllText(fileName));
 
                     if (!accessToken.IsExpired)
-                        return Login.GetSession(loginProvider, accessToken, initLat, initLong);
+                        return Login.GetSession(loginProvider, accessToken, initLat, initLong, logger);
                 }
             }
 
-            var session = await Login.GetSession(loginProvider, initLat, initLong);
+            var session = await Login.GetSession(loginProvider, initLat, initLong, logger);
 
             if (mayCache)
                 SaveAccessToken(session.AccessToken);

@@ -44,7 +44,7 @@ namespace POGOLib.Official.Net
         /// </summary>
         public readonly RpcClient RpcClient;
         
-        public readonly Logger Logger;
+        public readonly ILogger Logger;
 
         private static readonly string[] ValidLoginProviders = { "ptc", "google" };
 
@@ -54,13 +54,13 @@ namespace POGOLib.Official.Net
         // public IDataCache DataCache { get; set; } = new MemoryDataCache();
         // public Templates Templates { get; private set; }
 
-        internal Session(ILoginProvider loginProvider, AccessToken accessToken, GeoCoordinate geoCoordinate, DeviceWrapper deviceWrapper, GetPlayerMessage.Types.PlayerLocale playerLocale)
+        internal Session(ILoginProvider loginProvider, AccessToken accessToken, GeoCoordinate geoCoordinate, DeviceWrapper deviceWrapper, GetPlayerMessage.Types.PlayerLocale playerLocale, ILogger logger)
         {
             if (!ValidLoginProviders.Contains(loginProvider.ProviderId))
             {
                 throw new ArgumentException("LoginProvider ID must be one of the following: " + string.Join(", ", ValidLoginProviders));
             }
-            Logger = new Logger();
+            Logger = logger;
 
             State = SessionState.Stopped;
 
