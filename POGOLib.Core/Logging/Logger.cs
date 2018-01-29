@@ -4,7 +4,7 @@ namespace POGOLib.Official.Logging
 {
     public delegate void LogOutputDelegate(LogLevel logLevel, string message);
 
-    public class Logger
+    public class Logger : ILogger
     {
         private readonly List<LogOutputDelegate> LogOutputs = new List<LogOutputDelegate>();
 

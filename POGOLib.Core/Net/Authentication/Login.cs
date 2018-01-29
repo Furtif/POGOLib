@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using POGOLib.Official.Extensions;
+using POGOLib.Official.Logging;
 using POGOLib.Official.LoginProviders;
 using POGOLib.Official.Net.Authentication.Data;
 using POGOLib.Official.Util.Device;
@@ -23,14 +24,14 @@ namespace POGOLib.Official.Net.Authentication
         /// <param name="deviceWrapper">The <see cref="DeviceWrapper"/> used by the <see cref="Session"/>, keep null if you want a randomly generated <see cref="DeviceWrapper"/>.</param>
         /// <param name = "playerLocale"></param>
         /// <returns></returns>
-        public static Session GetSession(ILoginProvider loginProvider, AccessToken accessToken, double initialLatitude, double initialLongitude, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
+        public static Session GetSession(ILoginProvider loginProvider, AccessToken accessToken, double initialLatitude, double initialLongitude, ILogger logger, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
         {
             if (accessToken.IsExpired)
                 throw new Exception("AccessToken is expired.");
 
             DeviceWrapper device = deviceWrapper ?? DeviceInfoUtil.GetRandomDevice();
             GetPlayerMessage.Types.PlayerLocale locale = playerLocale ?? new GetPlayerMessage.Types.PlayerLocale { Country = "US", Language = "en", Timezone = "America/New_York" };
-            var session = new Session(loginProvider, accessToken, new GeoCoordinate(initialLatitude, initialLongitude), device, locale);
+            var session = new Session(loginProvider, accessToken, new GeoCoordinate(initialLatitude, initialLongitude), device, locale, logger);
             session.Logger.Debug("Authenticated from cache.");
             return session;
         }
@@ -44,12 +45,12 @@ namespace POGOLib.Official.Net.Authentication
         /// <param name="deviceWrapper">The <see cref="DeviceWrapper"/> used by the <see cref="Session"/>, keep null if you want a randomly generated <see cref="DeviceWrapper"/>.</param>
         /// <param name = "playerLocale"></param>
         /// <returns></returns>
-        public static async Task<Session> GetSession(ILoginProvider loginProvider, double initialLatitude, double initialLongitude, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
+        public static async Task<Session> GetSession(ILoginProvider loginProvider, double initialLatitude, double initialLongitude, ILogger logger, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
         {
             DeviceWrapper device = deviceWrapper ?? DeviceInfoUtil.GetRandomDevice();
             GetPlayerMessage.Types.PlayerLocale locale = playerLocale ?? new GetPlayerMessage.Types.PlayerLocale { Country = "US", Language = "en", Timezone = "America/New_York" };
             string language = locale.Language + "-" + locale.Country;
-            var session = new Session(loginProvider, await loginProvider.GetAccessToken(device.UserAgent, language), new GeoCoordinate(initialLatitude, initialLongitude), device, locale);
+            var session = new Session(loginProvider, await loginProvider.GetAccessToken(device.UserAgent, language), new GeoCoordinate(initialLatitude, initialLongitude), device, locale, logger);
             if (loginProvider is PtcLoginProvider)
                 session.Logger.Debug("Authenticated through PTC.");
             else
@@ -65,7 +66,7 @@ namespace POGOLib.Official.Net.Authentication
         /// <param name="deviceWrapper">The <see cref="DeviceWrapper"/> used by the <see cref="Session"/>, keep null if you want a randomly generated <see cref="DeviceWrapper"/>.</param>
         /// <param name = "playerLocale"></param>
         /// <returns></returns>
-        public static Session GetSession(ILoginProvider loginProvider, AccessToken accessToken, GeoCoordinate coordinate, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
+        public static Session GetSession(ILoginProvider loginProvider, AccessToken accessToken, GeoCoordinate coordinate, ILogger logger, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
         {
             if (accessToken.IsExpired)
             {
@@ -74,7 +75,7 @@ namespace POGOLib.Official.Net.Authentication
 
             DeviceWrapper device = deviceWrapper ?? DeviceInfoUtil.GetRandomDevice();
             GetPlayerMessage.Types.PlayerLocale locale = playerLocale ?? new GetPlayerMessage.Types.PlayerLocale { Country = "US", Language = "en", Timezone = "America/New_York" };
-            var session = new Session(loginProvider, accessToken, coordinate, device, locale);
+            var session = new Session(loginProvider, accessToken, coordinate, device, locale, logger);
             session.Logger.Debug("Authenticated from cache.");
             if (loginProvider is PtcLoginProvider)
                 session.Logger.Debug("Authenticated through PTC.");
@@ -91,12 +92,12 @@ namespace POGOLib.Official.Net.Authentication
         /// <param name="deviceWrapper">The <see cref="DeviceWrapper"/> used by the <see cref="Session"/>, keep null if you want a randomly generated <see cref="DeviceWrapper"/>.</param>
         /// <param name = "playerLocale"></param>
         /// <returns></returns>
-        public static async Task<Session> GetSession(ILoginProvider loginProvider, GeoCoordinate coordinate, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
+        public static async Task<Session> GetSession(ILoginProvider loginProvider, GeoCoordinate coordinate, ILogger logger, DeviceWrapper deviceWrapper = null, GetPlayerMessage.Types.PlayerLocale playerLocale = null)
         {
             DeviceWrapper device = deviceWrapper ?? DeviceInfoUtil.GetRandomDevice();
             GetPlayerMessage.Types.PlayerLocale locale = playerLocale ?? new GetPlayerMessage.Types.PlayerLocale { Country = "US", Language = "en", Timezone = "America/New_York" };
             string language = locale.Language + "-" + locale.Country;
-            var session = new Session(loginProvider, await loginProvider.GetAccessToken(device.UserAgent, language), coordinate, device, locale);
+            var session = new Session(loginProvider, await loginProvider.GetAccessToken(device.UserAgent, language), coordinate, device, locale, logger);
             if (loginProvider is PtcLoginProvider)
                 session.Logger.Debug("Authenticated through PTC.");
             else
