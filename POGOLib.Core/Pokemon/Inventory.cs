@@ -119,6 +119,13 @@ namespace POGOLib.Official.Pokemon
                             .OrderByDescending(i => i.ModifiedTimestampMs)
                             .Skip(1));
                 }
+                if (deltaItem.InventoryItemData.AvatarItem != null)
+                {
+                    oldItems.AddRange(
+                        InventoryItems.Where(i => i.InventoryItemData?.AvatarItem != null)
+                            .OrderByDescending(i => i.ModifiedTimestampMs)
+                            .Skip(1));
+                }
                 if (deltaItem.InventoryItemData.AppliedItems != null)
                 {
                     oldItems.AddRange(
@@ -130,6 +137,20 @@ namespace POGOLib.Official.Pokemon
                 {
                     oldItems.AddRange(
                         InventoryItems.Where(i => i.InventoryItemData?.EggIncubators != null)
+                            .OrderByDescending(i => i.ModifiedTimestampMs)
+                            .Skip(1));
+                }
+                if (deltaItem.InventoryItemData.Quest != null)
+                {
+                    oldItems.AddRange(
+                        InventoryItems.Where(i => i.InventoryItemData?.Quest != null)
+                            .OrderByDescending(i => i.ModifiedTimestampMs)
+                            .Skip(1));
+                }
+                if (deltaItem.InventoryItemData.RaidTickets != null)
+                {
+                    oldItems.AddRange(
+                        InventoryItems.Where(i => i.InventoryItemData?.RaidTickets != null)
                             .OrderByDescending(i => i.ModifiedTimestampMs)
                             .Skip(1));
                 }

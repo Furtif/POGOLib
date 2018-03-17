@@ -17,6 +17,16 @@ namespace POGOLib.Official
         public static bool IgnoreHashVersion { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets the <see cref="IgnoreHashSemafore"/> boolean.
+        /// </summary>
+        public static bool IgnoreHashSemafore { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the <see cref="IgnoreRPCSemafore"/> boolean.
+        /// </summary>
+        public static bool IgnoreRPCSemafore { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets the <see cref="EnableHeartbeat"/> boolean. If set to true, session Heartbeat.
         /// </summary>
         public static bool EnableHeartbeat { get; set; } = true;

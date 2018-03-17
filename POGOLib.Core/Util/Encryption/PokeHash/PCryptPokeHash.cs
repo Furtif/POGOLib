@@ -38,7 +38,7 @@ namespace POGOLib.Official.Util.Encryption.PokeHash
             0xef, 0x9d, 0xa1, 0x9e, 0xb6, 0xea, 0xc6, 0xf1, 0x80, 0x1d, 0x05, 0x73, 0xd6, 0xb3, 0x36, 0x85
         };
 
-        private static void encrypt_cipher(byte[] src, int size)
+        private static void Encrypt_cipher(byte[] src, int size)
         {
             var newxbox = new byte[xbox.Length];
             xbox.CopyTo(newxbox, 0);
@@ -106,7 +106,7 @@ namespace POGOLib.Official.Util.Encryption.PokeHash
 
                 }
                 output[output_size - 1] = 0x23;
-                encrypt_cipher(output, output_size);
+                Encrypt_cipher(output, output_size);
 
                 return output;
             }

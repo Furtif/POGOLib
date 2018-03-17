@@ -24,7 +24,7 @@ namespace POGOLib.Official.Util.Hash
     ///     Android version: 0.91.2
     ///     IOS version: 1.91.2
     /// </summary>
-    public class PokeHashHasher : IHasher
+    public class PokeHashHasher : IHasher, IDisposable
     {
         private readonly List<PokeHashAuthKey> _authKeys;
         private readonly List<PokeHashAuthHasher> _authHashers
@@ -82,7 +82,11 @@ namespace POGOLib.Official.Util.Hash
                 _authKeys.Add(pokeHashAuthKey);
             }
 
-            _keySelection = new Semaphore(1, 1);
+            var rnd = new Random();
+            _authHashers = _authHashers.OrderBy(item => rnd.Next()).ToList();
+
+            if (!Configuration.IgnoreHashSemafore)
+                _keySelection = new Semaphore(1, 1);
         }
 
         public async Task<HashData> GetHashDataAsync(RequestEnvelope requestEnvelope, Signature signature, byte[] locationBytes, byte[][] requestsBytes, byte[] serializedTicket)
@@ -157,6 +161,7 @@ namespace POGOLib.Official.Util.Hash
                 {
                     // TODO: Find a better way to let the developer know of these issues.
                     message = $"[PokeHash]: {message}";
+                    Dispose();
                     throw new PokeHashException(message);
                 }
             }
@@ -170,7 +175,9 @@ namespace POGOLib.Official.Util.Hash
             HttpResponseMessage response = null;
 
             // Key selection
-            _keySelection.WaitOne();
+            if (!Configuration.IgnoreHashSemafore)
+                _keySelection.WaitOne();
+
             try
             {
                 PokeHashAuthKey authKey;
@@ -225,11 +232,13 @@ namespace POGOLib.Official.Util.Hash
                                 !int.TryParse(requestsRemainingValue.First(), out rateRequestsRemaining) ||
                                 !int.TryParse(ratePeriodEndValue.FirstOrDefault(), out ratePeriodEndSeconds))
                             {
+                                Dispose();
                                 throw new PokeHashException("Failed parsing pokehash response header values.");
                             }
                         }
                         else
                         {
+                            Dispose();
                             throw new PokeHashException("Failed parsing pokehash response headers.");
                         }
 
@@ -249,6 +258,7 @@ namespace POGOLib.Official.Util.Hash
 
                         if (response == null)
                         {
+                            Dispose();
                             throw new PokeHashException("Missed hash response Data");
                         }
                         return response;
@@ -264,7 +274,8 @@ namespace POGOLib.Official.Util.Hash
             }
             finally
             {
-                _keySelection.Release();
+                if (!Configuration.IgnoreHashSemafore)
+                    _keySelection.Release();
             }
             return response;
         }
@@ -272,6 +283,18 @@ namespace POGOLib.Official.Util.Hash
         public byte[] GetEncryptedSignature(byte[] signatureBytes, uint timestampSinceStartMs)
         {
             return PCryptPokeHash.Encrypt(signatureBytes, timestampSinceStartMs);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        internal void Dispose(bool disposing)
+        {
+            if (!disposing) return;
+            if (!Configuration.IgnoreHashSemafore)
+                _keySelection?.Dispose();
         }
     }
 }

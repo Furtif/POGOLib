@@ -138,7 +138,10 @@ namespace POGOLib.Official.Net
                 });
 
                 if (response == null)
+                {
                     _session.Logger.Warn("Pokemon Go service as maybe issues, Please try later");
+                    //return false;
+                }
 
                 playerResponse = GetPlayerResponse.Parser.ParseFrom(response);
 
@@ -249,7 +252,6 @@ namespace POGOLib.Official.Net
             _session.Map.Cells = new RepeatedField<MapCell>();
             throw new SessionStateException("We received 0 map cells or status is empty.");
         }
-
         /// <summary>
         ///     Gets the next request id for the <see cref="RequestEnvelope" />.
         /// </summary>
@@ -383,9 +385,9 @@ namespace POGOLib.Official.Net
                 _session.AccessToken.AuthTicket = null;
             }
 
-            if (_session.AccessToken.AuthTicket == null || _session.AccessToken.IsExpired)
+            if (_session.AccessToken.AuthTicket == null || _session.AccessToken.IsExpired || string.IsNullOrEmpty(_session.AccessToken.Token))
             {
-                if (_session.AccessToken.IsExpired)
+                if (_session.AccessToken.IsExpired || string.IsNullOrEmpty(_session.AccessToken.Token))
                 {
                     await _session.GetValidAccessToken(true);
                 }
@@ -478,12 +480,12 @@ namespace POGOLib.Official.Net
             return await SendRemoteProcedureCall(await GetRequestEnvelopeAsync(request, addDefaultRequests, nobuddy, noinbox));
         }
 
-        private Task<ByteString> SendRemoteProcedureCall(RequestEnvelope requestEnvelope)
+        private async Task<ByteString> SendRemoteProcedureCall(RequestEnvelope requestEnvelope)
         {
-            return Task.Run(async () =>
+            return await Task.Run(async () =>
             {
                 //Session is paused this is not in semafore!!
-                if (requestEnvelope.Requests.FirstOrDefault()?.RequestType == RequestType.VerifyChallenge)
+                if (requestEnvelope.Requests.FirstOrDefault()?.RequestType == RequestType.VerifyChallenge && !Configuration.IgnoreRPCSemafore)
                 {
                     _rpcResponses.GetOrAdd(requestEnvelope, await PerformRemoteProcedureCallAsync(requestEnvelope));
 
@@ -496,19 +498,23 @@ namespace POGOLib.Official.Net
 
                 try
                 {
-                    _rpcQueueMutex.WaitOne();
+                    if (!Configuration.IgnoreRPCSemafore)
+                        _rpcQueueMutex.WaitOne();
 
                     RequestEnvelope processRequestEnvelope;
 
                     while (_rpcQueue.TryDequeue(out processRequestEnvelope))
                     {
-                        //var diff = Math.Max(0, DateTime.Now.Millisecond - LastRpcRequest.Millisecond);
-                        var diff = (int)Math.Min((DateTime.UtcNow - LastRpcRequest.ToUniversalTime()).TotalMilliseconds, Configuration.ThrottleDifference);
-                        if (diff < Configuration.ThrottleDifference)
+                        if (Configuration.ThrottleDifference > 0)
                         {
-                            var delay = Configuration.ThrottleDifference - diff + (int)(_session.Random.NextDouble() * 0);
+                            //var diff = Math.Max(0, DateTime.Now.Millisecond - LastRpcRequest.Millisecond);
+                            var diff = (int)Math.Min((DateTime.UtcNow - LastRpcRequest.ToUniversalTime()).TotalMilliseconds, Configuration.ThrottleDifference);
+                            if (diff < Configuration.ThrottleDifference)
+                            {
+                                var delay = Configuration.ThrottleDifference - diff + (int)(_session.Random.NextDouble() * 0);
 
-                            await Task.Delay(delay);
+                                await Task.Delay(delay);
+                            }
                         }
 
                         _rpcResponses.GetOrAdd(processRequestEnvelope, await PerformRemoteProcedureCallAsync(processRequestEnvelope));
@@ -518,6 +524,7 @@ namespace POGOLib.Official.Net
                     _rpcResponses.TryRemove(requestEnvelope, out ret);
 
                     return ret;
+
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -525,7 +532,8 @@ namespace POGOLib.Official.Net
                 }
                 finally
                 {
-                    _rpcQueueMutex.Release();
+                    if (!Configuration.IgnoreRPCSemafore)
+                        _rpcQueueMutex.Release();
                 }
             });
         }
@@ -562,12 +570,18 @@ namespace POGOLib.Official.Net
                 using (var requestData = new ByteArrayContent(requestEnvelope.ToByteArray()))
                 {
                     if (requestData == null)
+                    {
+                        await Task.Delay(10000); //wait 10 secs on grave bug
                         throw new SessionStateException($"RequestData is null");
+                    }
 
                     using (var response = await _session.HttpClient.PostAsync(_requestUrl ?? Constants.ApiUrl, requestData))
                     {
                         if (response == null)
+                        {
+                            await Task.Delay(10000); //wait 10 secs on grave bug
                             throw new SessionStateException($"RequestData response is null");
+                        }
 
                         _session.Logger.Debug("Sending RPC Request: '" + string.Join(", ", requestEnvelope.Requests.Select(x => x.RequestType)) + "'");
                         _session.Logger.Debug("=> Platform Request: '" + string.Join(", ", requestEnvelope.PlatformRequests.Select(x => x.Type)) + "'");
@@ -575,7 +589,7 @@ namespace POGOLib.Official.Net
                         if (!response.IsSuccessStatusCode)
                         {
                             _session.Logger.Warn(await response.Content.ReadAsStringAsync());
-
+                            await Task.Delay(10000); //wait 10 secs on grave bug
                             throw new Exception("Received a non-success HTTP status code from the RPC server, see the console for the response.");
                         }
 
@@ -668,7 +682,7 @@ namespace POGOLib.Official.Net
                                 throw new SessionUnknowException("UNKNOWN");
                             case ResponseEnvelope.Types.StatusCode.InvalidPlatformRequest:
                                 await Task.Delay(10000); //wait 10 secs on grave bug
-                               throw new InvalidPlatformException("INVALID PLATFORM REQUEST");
+                                throw new InvalidPlatformException("INVALID PLATFORM REQUEST");
                             case ResponseEnvelope.Types.StatusCode.InvalidRequest:
                                 await Task.Delay(10000); //wait 10 secs on grave bug
                                 throw new InvalidPlatformException("INVALID REQUEST");
@@ -720,7 +734,7 @@ namespace POGOLib.Official.Net
                     throw new SessionStateException("Your account may be temporary banned! please try from the official client.");
                 }
 
-               throw new APIBadRequestException(ex.Message);
+                throw new APIBadRequestException(ex.Message);
             }
             catch (SessionUnknowException ex)
             {
@@ -1009,7 +1023,6 @@ namespace POGOLib.Official.Net
         internal void Dispose(bool disposing)
         {
             if (!disposing) return;
-
             _rpcQueueMutex?.Dispose();
         }
 
