@@ -26,7 +26,7 @@ namespace POGOLib.Official.Net
 {
     public class RpcClient : IDisposable
     {
-        const string INITIAL_PTR8 = "4d32f6b70cda8539ab82be5750e009d6d05a48ad";
+        const string INITIAL_PTR8 = "d9ad6deadadfd59abc0e8a85d01e2f6140e6e79b";
         /// <summary>
         ///     The authenticated <see cref="Session" />.
         /// </summary>
