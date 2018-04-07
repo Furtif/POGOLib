@@ -34,6 +34,5 @@ namespace POGOLib.Official.Util.Hash.PokeHash
             this.pattern = pattern;
             this.uri = uri;
         }
-    }
-    
+    }   
 }

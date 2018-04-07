@@ -9,6 +9,5 @@ namespace POGOLib.Official.Exceptions
         {
             
         }
-
     }
 }

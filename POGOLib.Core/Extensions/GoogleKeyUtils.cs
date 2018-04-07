@@ -75,6 +75,5 @@ namespace POGOLib.Official.Extensions
         {
             return Convert.ToBase64String(byteArray).Replace('+', '-').Replace('/', '_');
         }
-
     }
 }

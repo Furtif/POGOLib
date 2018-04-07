@@ -62,6 +62,7 @@ namespace POGOLib.Official.Net.Authentication
                 session.Logger.Debug("Authenticated through Google.");
             return session;
         }
+
         /// <summary>
         /// Login with a stored <see cref="AccessToken" />.
         /// </summary>

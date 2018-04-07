@@ -6,7 +6,6 @@ namespace POGOLib.Official.Exceptions
     {
         public PokeHashException(string message) : base(message)
         {
-
         }
     }
 }

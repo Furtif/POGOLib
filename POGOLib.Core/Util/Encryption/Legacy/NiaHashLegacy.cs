@@ -27,7 +27,7 @@ namespace POGOLib.Official.Util.Encryption.Legacy
         private const ulong FinalMagic1 = 0x6823775b1daad522;
         private const uint HashSeed = 0x46e945f8;
 
-        private static ulong read_int64(byte[] p, int offset)
+        private static ulong Read_int64(byte[] p, int offset)
         {
             return BitConverter.ToUInt64(p, offset);
         }
@@ -83,8 +83,8 @@ namespace POGOLib.Official.Util.Encryption.Legacy
             UInt128 hash;
 
             hash = numChunks != 0 
-                ? hash_chunk(input, 128, 0) 
-                : hash_chunk(tail, tailSize, 0);
+                ? Hash_chunk(input, 128, 0) 
+                : Hash_chunk(tail, tailSize, 0);
 
             hash += RoundMagic;
 
@@ -95,12 +95,12 @@ namespace POGOLib.Official.Util.Encryption.Legacy
                 while (--numChunks > 0)
                 {
                     offset += 128;
-                    hash = hash_muladd(hash, RoundMagic, hash_chunk(input, 128, offset));
+                    hash = Hash_muladd(hash, RoundMagic, Hash_chunk(input, 128, offset));
                 }
 
                 if (tailSize > 0)
                 {
-                    hash = hash_muladd(hash, RoundMagic, hash_chunk(tail, tailSize, 0));
+                    hash = Hash_muladd(hash, RoundMagic, Hash_chunk(tail, tailSize, 0));
                 }
             }
 
@@ -130,21 +130,21 @@ namespace POGOLib.Official.Util.Encryption.Legacy
             return h.Lo;
         }
 
-        static UInt128 hash_chunk(byte[] chunk, long size, int off)
+        static UInt128 Hash_chunk(byte[] chunk, long size, int off)
         {
             var hash = new UInt128(0);
             for (var i = 0; i < 8; i++)
             {
                 var offset = i * 16;
                 if (offset >= size) break;
-                var a = read_int64(chunk, off + offset);
-                var b = read_int64(chunk, off + offset + 8);
+                var a = Read_int64(chunk, off + offset);
+                var b = Read_int64(chunk, off + offset + 8);
                 hash += (new UInt128(a + MagicTable[i * 2])) * (new UInt128(b + MagicTable[i * 2 + 1]));
             }
             return hash << 2 >> 2;
         }
 
-        static UInt128 hash_muladd(UInt128 hash, UInt128 mul, UInt128 add)
+        static UInt128 Hash_muladd(UInt128 hash, UInt128 mul, UInt128 add)
         {
             ulong a0 = add.Lo & 0xffffffff,
                 a1 = add.Lo >> 32,

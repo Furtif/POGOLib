@@ -21,13 +21,15 @@ namespace POGOLib.Official.Util.Hash
 
         public async Task<HashData> GetHashDataAsync(RequestEnvelope requestEnvelope, Signature signature, byte[] locationBytes, byte[][] requestsBytes, byte[] serializedTicket)
         {
-            await Task.Delay(0);
-            return new HashData
+            return await Task.Run(() =>
             {
-                LocationAuthHash = NiaHashLegacy.Hash32Salt(locationBytes, NiaHashLegacy.Hash32(serializedTicket)),
-                LocationHash = NiaHashLegacy.Hash32(locationBytes),
-                RequestHashes = requestsBytes.Select(x => NiaHashLegacy.Hash64Salt64(x, NiaHashLegacy.Hash64(serializedTicket))).ToArray()
-            };
+                return new HashData
+                {
+                    LocationAuthHash = NiaHashLegacy.Hash32Salt(locationBytes, NiaHashLegacy.Hash32(serializedTicket)),
+                    LocationHash = NiaHashLegacy.Hash32(locationBytes),
+                    RequestHashes = requestsBytes.Select(x => NiaHashLegacy.Hash64Salt64(x, NiaHashLegacy.Hash64(serializedTicket))).ToArray()
+                };
+            });
         }
 
         public byte[] GetEncryptedSignature(byte[] signatureBytes, uint timestampSinceStartMs)
