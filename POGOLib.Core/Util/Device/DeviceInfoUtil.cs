@@ -34,14 +34,16 @@ namespace POGOLib.Official.Util.Device
             "11.1.0",
             "11.2.0",
             "11.2.5",
-            "11.3.0"
+            "11.3.0",
+            "11.4.0"
         };
 
         private static readonly string[] OsUserAgentParts = {
             "CFNetwork/889.3 Darwin/17.2.0",      // iOS 11.1.0
             "CFNetwork/893.10 Darwin/17.3.0",     // iOS 11.2.0
             "CFNetwork/893.14.2 Darwin/17.4.0",   // iOS 11.2.5
-            "CFNetwork/897.1 Darwin/17.5.0"       // iOS 11.3.0
+            "CFNetwork/897.1 Darwin/17.5.0",      // iOS 11.3.0
+            "CFNetwork/897.15 Darwin/17.5.0"      // iOS 11.4.0
         };
 
         public static DeviceWrapper GetRandomDevice()
