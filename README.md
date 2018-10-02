@@ -1,3 +1,9 @@
+<!-- define variables -->
+[1.1]: http://i.imgur.com/M4fJ65n.png (ATTENTION)
+
+
+![alt text][1.1] <strong><em>`The contents of this repo are a proof of concept and are for educational use only`</em></strong>![alt text][1.1]<br/>
+
 [![Build status](https://ci.appveyor.com/api/projects/status/6vktt4ad4v5wkiqq/branch/core?svg=true)](https://ci.appveyor.com/project/RocketBot/pogolib/branch/core) [![Waffle.io - Columns and their card count](https://badge.waffle.io/Furtif/POGOLib.svg?columns=all)](https://waffle.io/Furtif/POGOLib)
 
 POGOLib [![NuGet](https://img.shields.io/nuget/v/POGOLib.Core.svg?maxAge=60)](https://www.nuget.org/packages/POGOLib.Core) POGOProtos [![NuGet](https://img.shields.io/nuget/vpre/POGOProtos.Core.svg?maxAge=60)](https://www.nuget.org/packages/POGOProtos.Core)  [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/rocketbot)
