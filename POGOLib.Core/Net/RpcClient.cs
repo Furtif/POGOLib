@@ -312,7 +312,7 @@ namespace POGOLib.Official.Net
                 request.Add(new Request
                 {
                     RequestType = RequestType.DownloadSettings,
-                    RequestMessage = new DownloadSettingsMessage
+                    RequestMessage = new DownloadSettingsActionMessage
                     {
                         Hash = _session.GlobalSettingsHash
                     }.ToByteString()
@@ -931,14 +931,14 @@ namespace POGOLib.Official.Net
                         break;
 
                     case RequestType.DownloadSettings: // Download_Settings
-                        DownloadSettingsResponse downloadSettings = null;
+                        DownloadSettingsActionResponse downloadSettings = null;
                         try
                         {
-                            downloadSettings = DownloadSettingsResponse.Parser.ParseFrom(bytes);
+                            downloadSettings = DownloadSettingsActionResponse.Parser.ParseFrom(bytes);
                         }
                         catch (Exception)
                         {
-                            downloadSettings = new DownloadSettingsResponse() { Error = "Could not parse downloadSettings" };
+                            downloadSettings = new DownloadSettingsActionResponse() { Error = "Could not parse downloadSettings" };
                             continue;
                         }
                         if (string.IsNullOrEmpty(downloadSettings.Error))
