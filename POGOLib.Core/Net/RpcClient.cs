@@ -15,8 +15,6 @@ using POGOProtos.Networking.Requests.Messages;
 using POGOProtos.Networking.Responses;
 using POGOProtos.Enums;
 using POGOProtos.Networking.Platform;
-using POGOProtos.Networking.Platform.Requests;
-using POGOProtos.Networking.Platform.Responses;
 using POGOLib.Official.Extensions;
 using POGOProtos.Map.Pokemon;
 using POGOLib.Official.Exceptions;
@@ -447,34 +445,65 @@ namespace POGOLib.Official.Net
         {
             var requestEnvelope = await GetRequestEnvelopeAsync(null, false);
 
-            /*
-             * unused
-             * 
-            switch (type)
+             switch (type)
             {
-                case PlatformRequestType.BuyItemAndroid:
+                case PlatformRequestType.AddLoginAction:
                     break;
-                case PlatformRequestType.BuyItemIos:
+                case PlatformRequestType.AddNewPoi:
                     break;
-                case PlatformRequestType.BuyItemPokecoins:
+                case PlatformRequestType.Challenge:
                     break;
-                case PlatformRequestType.GetStoreItems:
-                    requestEnvelope.PlatformRequests.Add(new RequestEnvelope.Types.PlatformRequest
-                    {
-                        Type = PlatformRequestType.GetStoreItems,
-                        RequestMessage = new GetStoreItemsRequest().ToByteString()
-                    });
+                case PlatformRequestType.CollectClientTelemetry:
                     break;
-                case PlatformRequestType.JoinEvent:
+                case PlatformRequestType.DownloadPlatformClientSettings:
                     break;
-                case PlatformRequestType.MethodUnset:
+                case PlatformRequestType.DownstreamServerActions:
+                    break;
+                case PlatformRequestType.GetAvailableSkusAndBalances:
+                    break;
+                case PlatformRequestType.GetFitnessReport:
+                    break;
+                case PlatformRequestType.GetSignedUrlForPhotoUpload:
+                    break;
+                case PlatformRequestType.ListLoginAction:
+                    break;
+                case PlatformRequestType.MapQueryRequest:
+                    break;
+                case PlatformRequestType.PurchaseSku:
+                    break;
+                case PlatformRequestType.RedeemAppleReceipt:
+                    break;
+                case PlatformRequestType.RedeemDesktopReceipt:
+                    break;
+                case PlatformRequestType.RedeemGoogleReceipt:
+                    break;
+                case PlatformRequestType.RedeemPasscode:
+                    break;
+                case PlatformRequestType.RegisterDownstreamServerActions:
+                    break;
+                case PlatformRequestType.RegisterPushNotification:
+                    break;
+                case PlatformRequestType.RemoveLoginAction:
+                    break;
+                case PlatformRequestType.ReplaceLoginAction:
+                    break;
+                case PlatformRequestType.SafetyNetChallenge:
                     break;
                 case PlatformRequestType.SendEncryptedSignature:
                     break;
-                case PlatformRequestType.UnknownPtr8:
+                case PlatformRequestType.SetInGameCurrencyExchangeRate:
+                    break;
+                case PlatformRequestType.TempTestResult:
+                    break;
+                case PlatformRequestType.Unknown:
+                    break;
+                case PlatformRequestType.UnregisterPushNotification:
+                    break;
+                case PlatformRequestType.UpdateFitnessMetrics:
+                    break;
+                case PlatformRequestType.UpdateNotificationStatus:
                     break;
             }
-            */
 
             return await SendRemoteProcedureCall(requestEnvelope);
         }
