@@ -26,7 +26,7 @@ namespace POGOLib.Official.Net
 {
     public class RpcClient : IDisposable
     {
-        const string INITIAL_PTR8 = "d9ad6deadadfd59abc0e8a85d01e2f6140e6e79b";
+        //const string INITIAL_PTR8 = "d9ad6deadadfd59abc0e8a85d01e2f6140e6e79b";
         /// <summary>
         ///     The authenticated <see cref="Session" />.
         /// </summary>
@@ -47,7 +47,8 @@ namespace POGOLib.Official.Net
         /// </summary>
         private string _requestUrl;
 
-        private string _mapKey = INITIAL_PTR8;
+        // unused
+        //private string _mapKey = INITIAL_PTR8;
 
         private readonly RandomIdGenerator idGenerator = new RandomIdGenerator();
 
@@ -55,7 +56,7 @@ namespace POGOLib.Official.Net
         {
             RequestType.CheckChallenge,
             RequestType.GetHatchedEggs,
-            RequestType.GetHoloholoInventory,
+            RequestType.GetHoloInventory,
             RequestType.CheckAwardedBadges,
             RequestType.DownloadSettings,
             RequestType.GetBuddyWalked,
@@ -72,7 +73,7 @@ namespace POGOLib.Official.Net
         {
             _session = session;
             _rpcEncryption = new RpcEncryption(session);
-            _mapKey = INITIAL_PTR8;
+            //_mapKey = INITIAL_PTR8;
         }
 
         internal DateTime LastRpcRequest { get; private set; }
@@ -181,7 +182,8 @@ namespace POGOLib.Official.Net
             //
 
             //GetStoreItems
-            await SendRemoteProcedureCallAsync(PlatformRequestType.GetStoreItems);
+            // unused
+            //await SendRemoteProcedureCallAsync(PlatformRequestType.GetStoreItems);
 
             //FetchAllNews
             RepeatedField<string> NewsIds = await FetchAllNews();
@@ -287,7 +289,7 @@ namespace POGOLib.Official.Net
                 },
                 new Request
                 {
-                    RequestType = RequestType.GetHoloholoInventory,
+                    RequestType = RequestType.GetHoloInventory,
                     RequestMessage = new GetHoloInventoryMessage
                     {
                         LastTimestampMs = _session.Player.Inventory.LastInventoryTimestampMs
@@ -312,7 +314,7 @@ namespace POGOLib.Official.Net
                 request.Add(new Request
                 {
                     RequestType = RequestType.DownloadSettings,
-                    RequestMessage = new DownloadSettingsActionMessage
+                    RequestMessage = new DownloadSettingsMessage
                     {
                         Hash = _session.GlobalSettingsHash
                     }.ToByteString()
@@ -410,6 +412,8 @@ namespace POGOLib.Official.Net
             requestEnvelope.PlatformRequests.Add(await _rpcEncryption.GenerateSignatureAsync(requestEnvelope));
 
             // Apply new UnknownPtr8.
+            /*
+             * unused
             if (Configuration.Hasher.AppVersion > 4500)
             {
                 if (requestEnvelope.Requests.Count > 0 && (
@@ -426,6 +430,7 @@ namespace POGOLib.Official.Net
                     });
                 }
             }
+            */
 
             return requestEnvelope;
         }
@@ -438,10 +443,13 @@ namespace POGOLib.Official.Net
             });
         }
 
-        public async Task<ByteString> SendRemoteProcedureCallAsync(PlatformRequestType type = PlatformRequestType.MethodUnset)
+        public async Task<ByteString> SendRemoteProcedureCallAsync(PlatformRequestType type = PlatformRequestType.Unknown)
         {
             var requestEnvelope = await GetRequestEnvelopeAsync(null, false);
 
+            /*
+             * unused
+             * 
             switch (type)
             {
                 case PlatformRequestType.BuyItemAndroid:
@@ -466,11 +474,12 @@ namespace POGOLib.Official.Net
                 case PlatformRequestType.UnknownPtr8:
                     break;
             }
+            */
 
             return await SendRemoteProcedureCall(requestEnvelope);
         }
 
-        public async Task<ByteString> SendRemoteProcedureCallAsync(Request request, bool addDefaultRequests = true, bool nobuddy = false, bool noinbox = false)
+            public async Task<ByteString> SendRemoteProcedureCallAsync(Request request, bool addDefaultRequests = true, bool nobuddy = false, bool noinbox = false)
         {
             return await SendRemoteProcedureCall(await GetRequestEnvelopeAsync(new[] { request }, addDefaultRequests, nobuddy, noinbox));
         }
@@ -648,6 +657,8 @@ namespace POGOLib.Official.Net
                                 requestEnvelope.PlatformRequests.Clear();
 
                                 // Apply new UnknownPtr8.
+                                /*
+                                 * unused
                                 if (Configuration.Hasher.AppVersion > 4500)
                                 {
                                     requestEnvelope.PlatformRequests.Add(new RequestEnvelope.Types.PlatformRequest()
@@ -659,6 +670,8 @@ namespace POGOLib.Official.Net
                                         }.ToByteString()
                                     });
                                 }
+                                */
+
                                 // Apply new PlatformRequests to envelope.
                                 requestEnvelope.PlatformRequests.Add(await _rpcEncryption.GenerateSignatureAsync(requestEnvelope));
 
@@ -698,12 +711,16 @@ namespace POGOLib.Official.Net
                             LastGeoCoordinateMapObjectsRequest = _session.Player.Coordinate;
                         }
 
+                        /*
+                         * unused
+                         * 
                         var mapPlatform = responseEnvelope.PlatformReturns.FirstOrDefault(x => x.Type == PlatformRequestType.UnknownPtr8);
                         if (mapPlatform != null)
                         {
                             var unknownPtr8Response = UnknownPtr8Response.Parser.ParseFrom(mapPlatform.Response);
                             _mapKey = unknownPtr8Response.Message;
                         }
+                        */
 
                         if (responseEnvelope.AuthTicket != null)
                         {
@@ -904,7 +921,7 @@ namespace POGOLib.Official.Net
                         }
                         break;
 
-                    case RequestType.GetHoloholoInventory: // Get_Inventory
+                    case RequestType.GetHoloInventory: // Get_Inventory
                         var inventory = GetHoloInventoryResponse.Parser.ParseFrom(bytes);
                         if (inventory.Success)
                         {
@@ -931,14 +948,14 @@ namespace POGOLib.Official.Net
                         break;
 
                     case RequestType.DownloadSettings: // Download_Settings
-                        DownloadSettingsActionResponse downloadSettings = null;
+                        DownloadSettingsResponse downloadSettings = null;
                         try
                         {
-                            downloadSettings = DownloadSettingsActionResponse.Parser.ParseFrom(bytes);
+                            downloadSettings = DownloadSettingsResponse.Parser.ParseFrom(bytes);
                         }
                         catch (Exception)
                         {
-                            downloadSettings = new DownloadSettingsActionResponse() { Error = "Could not parse downloadSettings" };
+                            downloadSettings = new DownloadSettingsResponse() { Error = "Could not parse downloadSettings" };
                             continue;
                         }
                         if (string.IsNullOrEmpty(downloadSettings.Error))
@@ -990,16 +1007,16 @@ namespace POGOLib.Official.Net
                             var pokemon = new MapPokemon
                             {
                                 EncounterId = getIncensePokemonResponse.EncounterId,
-                                ExpirationTimestampMs = getIncensePokemonResponse.DisappearTimestampMs,
+                                ExpirationTimeMs = getIncensePokemonResponse.DisappearTimestampMs,
                                 Latitude = getIncensePokemonResponse.Latitude,
                                 Longitude = getIncensePokemonResponse.Longitude,
-                                PokemonId = getIncensePokemonResponse.PokemonId,
+                                PokedexTypeId = getIncensePokemonResponse.PokemonId,
                                 SpawnPointId = getIncensePokemonResponse.EncounterLocation,
                                 PokemonDisplay = getIncensePokemonResponse.PokemonDisplay
                             };
 
-                            if (pokemon.PokemonId != PokemonId.Missingno)
-                                _session.Logger.Debug($"Received Incense Pokemon {pokemon.PokemonId.ToString()}");
+                            if (pokemon.PokedexTypeId != PokemonId.Missingno)
+                                _session.Logger.Debug($"Received Incense Pokemon {pokemon.PokedexTypeId.ToString()}");
                             _session.Map.IncensePokemon = pokemon;
                         }
                         break;

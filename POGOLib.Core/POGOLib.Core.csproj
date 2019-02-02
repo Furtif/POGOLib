@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="POGOProtos.Core" Version="2.38.1" />
+    <PackageReference Include="POGOProtos.Core" Version="2.39.0" />
     <PackageReference Include="Google.Protobuf" Version="3.6.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.4" />
